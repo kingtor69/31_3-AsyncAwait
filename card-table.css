@@ -1,0 +1,21 @@
+body {
+	background-color: green;
+	color: white;
+}
+
+#table {
+	display: relative;
+}
+
+#card {
+	display: relative;
+	top: auto;
+	left: auto;
+}
+
+.card {
+	position: absolute;
+	margin: 60px;
+	border: green;
+	border-radius: 12px;
+}
