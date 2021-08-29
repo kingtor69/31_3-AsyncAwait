@@ -6,26 +6,37 @@ const newCardButt = document.querySelector('#new-card');
 const cardTable = document.querySelector('#table');
 
 let deckId;
-let deckPromise = axios
-    .get('http://deckofcardsapi.com/api/deck/new/shuffle/')
-    .then(res => {
+async function shuffleDeck() {
+
+    let res = await axios.get('http://deckofcardsapi.com/api/deck/new/shuffle/')
+    try {
         deckId = res.data.deck_id;
-        return deck;
-    })
-    .catch(err => {
+        return deckId;
+    }
+    catch (err) {
         return err;
-    });
+    }
+}
+
+deckId = shuffleDeck()
+
 
 newCardButt.addEventListener('click', (e) => {
-    let nextCard = axios
-        .get(`http://deckofcardsapi.com/api/deck/${deckId}/draw/?count=1`)
-        .then(res => {
-            return dealCard(res.data.cards[0].image, res.data.remaining)
-        })
-        .catch(err => {
-            return err;
-        });
+    nextCard(deckId)
+    // let nextCard = axios
+    //     .get(`http://deckofcardsapi.com/api/deck/${deckId}/draw/?count=1`)
+    //     .then(res => {
+    //         return dealCard(res.data.cards[0].image, res.data.remaining)
+    //     })
+    //     .catch(err => {
+    //         return err;
+    //     });
 });
+
+async function nextCard(deckId) {
+    let resp = await axios.get(`http://deckofcardsapi.com/api/deck/${deckId}/draw/?count=1`);
+    dealCard(resp.data.cards[0].image, resp.data.remaining);
+};
 
 function dealCard (url, cardsLeft) {
     card = document.createElement('img');

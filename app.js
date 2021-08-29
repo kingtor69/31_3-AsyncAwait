@@ -5,50 +5,34 @@ const part1step2 = document.querySelector('#I-2');
 const part1step3 = document.querySelector('#I-3');
 
 
-// step1
-let thePromise = axios
-    .get(`http://numbersapi.com/42`)
-
-thePromise
-    .then(data=> {
-        return displayResult([data.data], part1step1);
-    });
-
-// step2
-const fourFacts = [];
-
-thePromise
-    .then(data=> {
-        fourFacts.push(data.data);
-        return axios.get('http://numbersapi.com/42');
-    })
-    .then(data=> {
-        fourFacts.push(data.data);
-        return axios.get('http://numbersapi.com/42');
-    })
-    .then(data=> {
-        fourFacts.push(data.data);
-        return axios.get('http://numbersapi.com/42');
-    })
-    .then(data=> {
-        fourFacts.push(data.data);
-        return displayResult(fourFacts, part1step2);
-    });
-
-// step3
-let fourMoreFacts = [];
-for (let i = 0; i < 4; i++) {
-    fourMoreFacts.push(
-        axios.get(`http://numbersapi.com/42`)
-    );
+async function getNumFacts(num, numOfFacts, element) {
+    const facts = []
+    const url = `http://numbersapi.com/${num}`
+    for (let i = 0; i < numOfFacts; i++) {
+        let resp = await axios.get(url);
+        facts.push(resp.data)
+    }
+    displayResult(facts, element)
 }
 
-Promise.all(fourMoreFacts)
-    .then(facts => {
-        const datum = [];
-        facts.forEach(data => datum.push(data.data))
-        displayResult(datum, part1step3);
-    });
+async function getFactForMultipleNums (arrOfNums, element) {
+    const facts = [];
+    let resp = await axios.get(`http://numbersapi.com/${arrOfNums}`);
+    // factsObj = resp.data
+    for (let i = 0; i < arrOfNums.length; i++) {
+        facts.push(resp.data[arrOfNums[i]])
+    }
+    displayResult(facts, element)
+}
+
+// step1
+getNumFacts(42, 1, part1step1);
+
+// step2
+getFactForMultipleNums([12, 13, 57], part1step2)
+
+// step3
+getNumFacts(42, 4, part1step3)
 
 function displayResult(datum, element) {
     let newUl = document.createElement('ul');
@@ -65,18 +49,13 @@ const part2step1 = document.querySelector('#II-1');
 const part2step2 = document.querySelector('#II-2');
 const part2step3 = document.querySelector('#II-3');
 
-// step1
-let cardPromise = axios
-    .get('http://deckofcardsapi.com/api/deck/new/shuffle/')
-    .then(res => {
-        return axios.get(`http://deckofcardsapi.com/api/deck/${res.data.deck_id}/draw/?count=1`)
-    })
-    .then(res => {
-        return parseCards(res.data.cards, part2step1)
-    })
-    .catch(err => {
-        return displayResult([err], part2step1)
-    });
+async function shuffleDeckAndDrawCards(numOfCards, element) {
+    const baseUrl = 'http://deckofcardsapi.com/api/deck/';
+    let deckResp = await axios.get(`${baseUrl}new/shuffle/`);
+    let cardsResp = await axios.get(`${baseUrl}${deckResp.data.deck_id}/draw/?count=${numOfCards}`);
+    console.log(cardsResp);
+    parseCards(cardsResp.data.cards, element);
+}
 
 function parseCards(cards, element) {
     const cardsParsed = [];
@@ -88,24 +67,8 @@ function parseCards(cards, element) {
     displayResult(cardsParsed, element);
 }
 
-// step 2
-const twoCards = [];
-let deck;
-let twoCardPromise = axios
-    .get('http://deckofcardsapi.com/api/deck/new/shuffle/')
-    .then(deal => {
-        deck = deal.data.deck_id;
-        return axios.get(`http://deckofcardsapi.com/api/deck/${deck}/draw/?count=1`)
-    })
-    .then(one => {
-        twoCards.push(one.data.cards[0])
-        return axios.get(`http://deckofcardsapi.com/api/deck/${deck}/draw/?count=1`)
-    })
-    .then(two => {
-        twoCards.push(two.data.cards[0])
-        return parseCards(twoCards, part2step2)
-    })
-    .catch(err => {
-        return displayResult([err], part2step2)
-    });
+// step1
+shuffleDeckAndDrawCards(1, part2step1);
 
+// step 2
+shuffleDeckAndDrawCards(2, part2step2);
